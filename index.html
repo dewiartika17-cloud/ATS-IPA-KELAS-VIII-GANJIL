@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kuis Interaktif IPA Kelas VIII - PTS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .game-container {
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 680px;
+            padding: 30px;
+            overflow: hidden;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        .game-title {
+            color: #2c3e50;
+            text-align: center;
+            font-size: 26px;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #636e72;
+            margin-bottom: 25px;
+        }
+
+        .input-group {
+            margin-bottom: 18px;
+        }
+
+        .input-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #34495e;
+        }
+
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 15px;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .input-group input:focus, .input-group select:focus {
+            border-color: #6c5ce7;
+        }
+
+        .btn-start, .btn-next, .btn-restart {
+            width: 100%;
+            background: #ff7675;
+            color: white;
+            border: none;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: 700;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(255, 118, 117, 0.4);
+            transition: 0.2s;
+        }
+
+        .btn-start:hover, .btn-next:hover:not(:disabled), .btn-restart:hover {
+            background: #d63031;
+            transform: translateY(-2px);
+        }
+
+        .btn-next:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* Progress Bar & Header */
+        .progress-bar-container {
+            width: 100%;
+            height: 10px;
+            background: #eee;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+
+        #progress-bar {
+            height: 100%;
+            width: 0%;
+            background: #00b894;
+            transition: width 0.3s;
+        }
+
+        .header-info {
+            display: flex;
+            justify-content: space-between;
+            font-weight: 600;
+            color: #636e72;
+            margin-bottom: 20px;
+        }
+
+        /* Question Area */
+        .question-card h2 {
+            font-size: 18px;
+            color: #2d3436;
+            margin-bottom: 15px;
+            line-height: 1.5;
+            white-space: pre-line;
+        }
+
+        .img-container {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .img-container img {
+            max-width: 100%;
+            max-height: 230px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+        }
+
+        /* Options */
+        .options-grid {
+            display: grid;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .option-btn {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            padding: 12px;
+            border-radius: 10px;
+            text-align: left;
+            font-size: 15px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            transition: 0.2s;
+        }
+
+        .option-btn img {
+            max-height: 80px;
+            max-width: 100%;
+            border-radius: 5px;
+            margin-top: 5px;
+        }
+
+        .option-btn:hover {
+            background: #e8f4fd;
+            border-color: #74b9ff;
+        }
+
+        .option-btn.selected {
+            background: #6c5ce7;
+            color: white;
+            border-color: #6c5ce7;
+        }
+
+        /* Result Screen */
+        .result-card {
+            text-align: center;
+        }
+
+        .score-circle {
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #00b894, #00cec9);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin: 20px auto;
+            box-shadow: 0 6px 15px rgba(0, 184, 148, 0.4);
+        }
+
+        #final-score {
+            font-size: 42px;
+            font-weight: 700;
+        }
+
+        .saving-status {
+            margin: 15px 0;
+            font-size: 14px;
+            font-weight: 600;
+            color: #0984e3;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <!-- 1. HALAMAN UTAMA / IDENTITAS -->
+        <div id="start-screen" class="screen active">
+            <h1 class="game-title">⚡ Science Master Quiz! 🧬</h1>
+            <p class="subtitle">Penilaian Tengah Semester (PTS) IPA Kelas VIII (40 Soal)</p>
+            
+            <form id="identity-form">
+                <div class="input-group">
+                    <label for="student-name">Nama Lengkap Siswa:</label>
+                    <input type="text" id="student-name" placeholder="Masukkan nama lengkap..." required>
+                </div>
+                <div class="input-group">
+                    <label for="student-class">Kelas:</label>
+                    <select id="student-class" required>
+                        <option value="">-- Pilih Kelas --</option>
+                        <option value="VIII A">VIII A</option>
+                        <option value="VIII B">VIII B</option>
+                        <option value="VIII C">VIII C</option>
+                        <option value="VIII D">VIII D</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-start">Mulai Tantangan! 🚀</button>
+            </form>
+        </div>
+
+        <!-- 2. HALAMAN GAME KUIS -->
+        <div id="quiz-screen" class="screen">
+            <div class="quiz-header">
+                <div class="progress-bar-container">
+                    <div id="progress-bar"></div>
+                </div>
+                <div class="header-info">
+                    <span id="question-number">Soal 1 / 40</span>
+                    <span id="score-live">Skor: 0</span>
+                </div>
+            </div>
+
+            <div class="question-card">
+                <h2 id="question-text">Teks Soal...</h2>
+                <div id="question-image-container" class="img-container">
+                    <!-- Tempat Gambar Soal Utama -->
+                </div>
+                <div id="options-container" class="options-grid">
+                    <!-- Pilihan Jawaban -->
+                </div>
+            </div>
+
+            <button id="btn-next" class="btn-next" disabled>Lanjut Soal ➔</button>
+        </div>
+
+        <!-- 3. HALAMAN SKOR & HASIL -->
+        <div id="result-screen" class="screen">
+            <div class="result-card">
+                <h2>🎉 Kuis Selesai! 🎉</h2>
+                <p class="player-info"><span id="res-name">Nama</span> (<span id="res-class">Kelas</span>)</p>
+                <div class="score-circle">
+                    <span id="final-score">0</span>
+                    <small>Nilai Akhir</small>
+                </div>
+                <p id="score-feedback">Hebat! Kamu telah menyelesaikan petualangan sains ini.</p>
+
+                <div id="status-saving" class="saving-status">
+                     Mengirim nilai ke database Guru... ⏳
+                </div>
+
+                <button onclick="location.reload()" class="btn-restart">Main Lagi 🔄</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // TAUTAN GOOGLE APPS SCRIPT
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyPt_MzFeWLL_SqxpjsAXXCUkmv4nmKRCnI_-1errnvpKrPIALYawKIN_Ljy0aDUrVn4w/exec";
+
+        // DATA 40 SOAL PTS VIII LENGKAP DARI DOKUMEN
+        const quizData = [
+            {
+                question: "Titik kuasa berada di antara titik tumpu dan titik beban, merupakan ciri dari ....",
+                image: null,
+                options: [{ text: "A. tuas jenis ketiga" }, { text: "B. tuas jenis kesatu" }, { text: "C. katrol tetap" }, { text: "D. katrol gabungan" }],
+                answer: 0
+            },
+            {
+                question: "Perhatikan gambar berikut!\nKeuntungan mekanik yang dihasilkan oleh alat tersebut adalah ....",
+                image: "https://uploads.onecompiler.io/453ac96k8/1789450089981/2.png", // Tautkan URL Gambar Katrol di sini
+                options: [{ text: "1" }, { text: "3" }, { text: "2" }, { text: "4" }],
+                answer: 1
+            },
+            {
+                question: "Perhatikan gambar di bawah ini!\nBesar kuasa yang harus diberikan adalah …..",
+                image: "https://uploads.onecompiler.io/453ac96k8/1789450094023/3.png", // Tautkan URL Gambar Tuas di sini
+                options: [{ text: "A. 1000 N" }, { text: "B. 2000 N" }, { text: "C. 2500 N" }, { text: "D. 3000 N" }],
+                answer: 2
+            },
+            {
+                question: "Sebuah beban diangkat dengan katrol tetap. Jika gaya yang digunakan adalah 24 N, berat beban adalah … kg",
+                image: null,
+                options: [{ text: "48" }, { text: "24" }, { text: "12" }, { text: "8" }],
+                answer: 1
+            },
+            {
+                question: "Sebuah batu beratnya 50 N diangkat dengan menggunakan tuas. Jika gaya yang diberikan sebesar 25 N, keuntungan mekaniknya adalah ....",
+                image: null,
+                options: [{ text: "2" }, { text: "0,5" }, { text: "1" }, { text: "0" }],
+                answer: 0
+            },
+            {
+                question: "Sebuah tongkat digunakan untuk memindahkan batu seberat 15 N. Jika gaya yang diberikan sebesar 5 N dan jarak titik tumpu ke beban 0,2 meter, maka panjang lengan kuasanya adalah .... meter",
+                image: null,
+                options: [{ text: "0,2" }, { text: "0,6" }, { text: "0,4" }, { text: "0,8" }],
+                answer: 1
+            },
+            {
+                question: "Alat yang menggunakan prinsip tuas jenis kedua adalah ...",
+                image: null,
+                options: [{ text: "A. Pisau" }, { text: "B. Gunting" }, { text: "C. Roda" }, { text: "D. Pembuka tutup botol" }],
+                answer: 3
+            },
+            {
+                question: "Sebuah drum dengan beban 100 Newton akan dinaikkan ke dalam bak truk dengan gaya 50 Newton menggunakan bidang miring. Besarnya keuntungan mekanik yang didapatkan adalah ....",
+                image: null,
+                options: [{ text: "A. 1" }, { text: "B. 2" }, { text: "C. 4" }, { text: "D. 5" }],
+                answer: 1
+            },
+            {
+                question: "Tuas dengan panjang 300 cm dan lengan beban 50 cm digunakan untuk mengangkat beban 1.000N. Kuasa yang diperlukan untuk mengangkat benda tersebut adalah sebesar....Newton",
+                image: null,
+                options: [{ text: "A. 300" }, { text: "B. 200" }, { text: "C. 250" }, { text: "D. 150" }],
+                answer: 1
+            },
+            {
+                question: "Perhatikan pada gambar!\nUsaha yang dilakukan untuk mengangkat bola adalah …",
+                image: "https://uploads.onecompiler.io/453ac96k8/1789450100046/10.jpg", // Tautkan URL Gambar Mengangkat Bola
+                options: [{ text: "A. 50 Joule" }, { text: "B. 12,5 Joule" }, { text: "C. 10 Joule" }, { text: "D. 0,5 Joule" }],
+                answer: 0
+            },
+            {
+                question: "Dua orang mendorong mobil yang mogok. Orang pertama mendorong dengan gaya F1 = 40 N dan orang kedua dengan gaya F2 = 50 N sehingga mobil bergerak sejauh 10 meter. Usaha total sebesar ….",
+                image: null,
+                options: [{ text: "10 Joule" }, { text: "90 Joule" }, { text: "500 Joule" }, { text: "900 Joule" }],
+                answer: 3
+            },
+            {
+                question: "Seorang anak memindahkan pasir menggunakan gerobak. Dalam waktu 5 menit, anak tersebut telah melakukan usaha sebesar 6.000 Joule. Besar daya anak tersebut adalah … watt",
+                image: null,
+                options: [{ text: "10" }, { text: "20" }, { text: "30" }, { text: "120" }],
+                answer: 1
+            },
+            {
+                question: "Contoh penggunaan bidang miring dalam kehidupan sehari-hari adalah ...",
+                image: null,
+                options: [
+                    { text: "A. Bermain jungkat-jungkit" },
+                    { text: "B. Memindahkan pohon ke dalam truk dengan menggunakan papan." },
+                    { text: "C. Mengambil air dengan katrol" },
+                    { text: "D. Menurunkan barang dari atas bangunan menggunakan tali." }
+                ],
+                answer: 1
+            },
+            {
+                question: "Berikut ini yang bukan termasuk jenis pesawat sederhana adalah ...",
+                image: null,
+                options: [{ text: "A. Tuas" }, { text: "B. Katrol" }, { text: "C. Roda berporos" }, { text: "D. Roda berputar" }],
+                answer: 3
+            },
+            {
+                question: "Benda dengan berat beban 3000N ditarik ke atas dengan menggunakan katrol. Besarnya gaya tarik dan keuntungan mekanik jika yang digunakan adalah sebuah katrol bergerak adalah ....",
+                image: null,
+                options: [
+                    { text: "A. 3.000 N dan 1" },
+                    { text: "B. 3.000 N dan 2" },
+                    { text: "C. 2.000 N dan 1" },
+                    { text: "D. 1.500 N dan 2" }
+                ],
+                answer: 3
+            },
+            {
+                question: "Perhatikan gambar bidang miring berikut!\nSebuah balok yang beratnya 150 Newton ditarik di atas bidang miring dengan gaya F. Besarnya gaya F adalah ….",
+                image: "https://uploads.onecompiler.io/453ac96k8/1789450104470/16.png", // Tautkan URL Gambar Bidang Miring
+                options: [{ text: "A. 60 Newton" }, { text: "B. 90 Newton" }, { text: "C. 200 Newton" }, { text: "D. 250 Newton" }],
+                answer: 1
+            },
+            {
+                question: "Perhatikan gambar katrol berikut!\nBesar gaya F yang diperlukan untuk menarik beban w = 400 N adalah ….",
+                image: "https://uploads.onecompiler.io/453ac96k8/1789450110394/17.png", // Tautkan URL Gambar Katrol Bergerak
+                options: [{ text: "4000 N" }, { text: "2000 N" }, { text: "400 N" }, { text: "200 N" }],
+                answer: 3
+            },
+            {
+                question: "Sebuah peti dinaikkan dengan menggunakan bidang miring seperti gambar. Jika berat benda 1000 N, besar kuasa yang diperlukan adalah …..",
+                image: "https://uploads.onecompiler.io/453ac96k8/1789450115663/18.png", // Tautkan URL Gambar Peti
+                options: [{ text: "2000 N" }, { text: "500 N" }, { text: "200 N" }, { text: "100 N" }],
+                answer: 1
+            },
+            {
+                question: "Seorang siswa menggunakan produk teknologi (pinset) seperti pada gambar. Untuk memperbesar keuntungan mekanis alat tersebut, hal yang harus dilakukan adalah…",
+                image: "https://uploads.onecompiler.io/453ac96k8/1789450119575/19.png", // Tautkan URL Gambar Pinset
+                options: [
+                    { text: "Memindahkan ibu jari dan telunjuk mendekati titik A" },
+                    { text: "Memindahkan ibu jari dan telunjuk mendekati titik C" },
+                    { text: "Meletakkan ibu jari dan telunjuk tepat di tengah titik B dan C" },
+                    { text: "Meletakkan ibu jari dan telunjuk tepat di titik A" }
+                ],
+                answer: 0
+            },
+            {
+                question: "Siapakah ilmuwan yang pertama kali memperkenalkan istilah 'sel' setelah mengamati sayatan gabus menggunakan mikroskop?",
+                image: null,
+                options: [{ text: "Antonie van Leeuwenhoek" }, { text: "Robert Hooke" }, { text: "Gregor Mendel" }, { text: "Louis Pasteur" }],
+                answer: 1
+            },
+            {
+                question: "Organel sel yang berfungsi sebagai pusat pengendali seluruh aktivitas sel dan menyimpan informasi genetik (DNA) adalah...",
+                image: null,
+                options: [{ text: "Mitokondria" }, { text: "Ribosom" }, { text: "Nukleus (Inti Sel)" }, { text: "Membran Sel" }],
+                answer: 2
+            },
+            {
+                question: "Proses respirasi sel yang menghasilkan energi dalam bentuk ATP terjadi di dalam organel...",
+                image: null,
+                options: [{ text: "Mitokondria" }, { text: "Badan Golgi" }, { text: "Retikulum Endoplasma" }, { text: "Lisosom" }],
+                answer: 0
+            },
+            {
+                question: "Salah satu organel yang hanya dimiliki oleh sel tumbuhan dan berfungsi sebagai tempat berlangsungnya proses fotosintesis adalah...",
+                image: null,
+                options: [{ text: "Sentriol" }, { text: "Kloroplas" }, { text: "Lisosom" }, { text: "Vakuola kecil" }],
+                answer: 1
+            },
+            {
+                question: "Perhatikan ciri-ciri sel berikut:\n1) Memiliki dinding sel\n2) Bentuk sel tidak tetap\n3) Memiliki vakuola berukuran besar\n4) Memiliki sentriol\n5) Memiliki kloroplas\nCiri-ciri sel tumbuhan ditunjukkan oleh nomor...",
+                image: null,
+                options: [{ text: "1), 2), dan 4)" }, { text: "1), 3), dan 5)" }, { text: "2), 3), dan 4)" }, { text: "3), 4), dan 5)" }],
+                answer: 1
+            },
+            {
+                question: "Sel darah merah (eritrosit) mengalami spesialisasi sehingga tidak memiliki inti sel (nukleus) saat dewasa. Tujuan spesialisasi ini adalah...",
+                image: null,
+                options: [
+                    { text: "Agar dapat bergerak aktif membuahi sel telur" },
+                    { text: "Untuk mengangkut nutrisi hasil fotosintesis" },
+                    { text: "Memaksimalkan ruang untuk mengangkut oksigen menggunakan hemoglobin" },
+                    { text: "Menghasilkan gerakan pada rangka tubuh" }
+                ],
+                answer: 2
+            },
+            {
+                question: "Jaringan pada tumbuhan yang berfungsi mengangkut air dan mineral dari akar ke seluruh bagian tumbuhan adalah...",
+                image: null,
+                options: [{ text: "Floem" }, { text: "Xilem" }, { text: "Stomata" }, { text: "Sel Penjaga" }],
+                answer: 1
+            },
+            {
+                question: "Sel otot pada hewan dan manusia mengandung sangat banyak mitokondria. Hal ini disebabkan karena sel otot membutuhkan...",
+                image: null,
+                options: [
+                    { text: "Banyak energi untuk menghasilkan gerakan" },
+                    { text: "Banyak protein untuk pembelahan sel" },
+                    { text: "Banyak cairan untuk menjaga tekanan turgor" },
+                    { text: "Banyak klorofil untuk fotosintesis" }
+                ],
+                answer: 0
+            },
+            {
+                question: "Urutan tingkatan organisasi kehidupan dari yang paling sederhana hingga yang paling kompleks adalah...",
+                image: null,
+                options: [
+                    { text: "Sel → Organ → Jaringan → Sistem Organ → Organisme" },
+                    { text: "Sel → Jaringan → Organ → Sistem Organ → Organisme" },
+                    { text: "Organisme → Sistem Organ → Organ → Jaringan → Sel" },
+                    { text: "Jaringan → Sel → Organ → Sistem Organ → Organisme" }
+                ],
+                answer: 1
+            },
+            {
+                question: "Jantung, lambung, dan paru-paru pada manusia tergolong ke dalam tingkat organisasi kehidupan yaitu...",
+                image: null,
+                options: [{ text: "Jaringan" }, { text: "Organ" }, { text: "Sistem Organ" }, { text: "Organisme" }],
+                answer: 1
+            },
+            {
+                question: "Zat makanan yang berfungsi sebagai sumber energi dan menghasilkan energi sebesar 4 kalori setiap gramnya adalah ….",
+                image: null,
+                options: [{ text: "Protein" }, { text: "Karbohidrat" }, { text: "Vitamin" }, { text: "Mineral" }],
+                answer: 1
+            },
+            {
+                question: "Salah satu fungsi karbohidrat bagi tubuh adalah ….",
+                image: null,
+                options: [
+                    { text: "Membantu proses pembekuan darah" },
+                    { text: "Mengatur proses metabolisme" },
+                    { text: "Membentuk antibodi saja" },
+                    { text: "Menguatkan gigi saja" }
+                ],
+                answer: 1
+            },
+            {
+                question: "Zat makanan yang berfungsi mengganti sel-sel tubuh yang rusak adalah ….",
+                image: null,
+                options: [{ text: "Karbohidrat" }, { text: "Protein" }, { text: "Vitamin" }, { text: "Mineral" }],
+                answer: 1
+            },
+            {
+                question: "Untuk menguji kandungan amilum pada makanan dapat digunakan larutan ….",
+                image: null,
+                options: [{ text: "Benedict" }, { text: "Biuret" }, { text: "Lugol" }, { text: "Sudan III" }],
+                answer: 2
+            },
+            {
+                question: "Berikut ini yang merupakan contoh makanan yang mengandung lemak nabati adalah ….",
+                image: null,
+                options: [{ text: "Daging dan telur" }, { text: "Ikan dan keju" }, { text: "Kelapa dan kacang tanah" }, { text: "Susu dan daging" }],
+                answer: 2
+            },
+            {
+                question: "Salah satu fungsi protein bagi tubuh adalah ….",
+                image: null,
+                options: [
+                    { text: "Mengganti sel-sel tubuh yang rusak" },
+                    { text: "Mencegah penyakit gondok" },
+                    { text: "Menjaga kesehatan mata" },
+                    { text: "Membantu pembekuan darah" }
+                ],
+                answer: 0
+            },
+            {
+                question: "Makanan berikut yang merupakan sumber protein nabati adalah ….",
+                image: null,
+                options: [{ text: "Kacang kedelai dan kacang hijau" }, { text: "Daging dan ikan" }, { text: "Susu dan telur" }, { text: "Hati dan daging" }],
+                answer: 0
+            },
+            {
+                question: "Vitamin yang berfungsi menjaga kesehatan mata dan meningkatkan daya tahan tubuh adalah ….",
+                image: null,
+                options: [{ text: "Vitamin A" }, { text: "Vitamin C" }, { text: "Vitamin D" }, { text: "Vitamin K" }],
+                answer: 0
+            },
+            {
+                question: "Mineral yang berfungsi membentuk tulang dan gigi serta membantu proses penyerapan kalsium adalah ….",
+                image: null,
+                options: [{ text: "Natrium" }, { text: "Kalium" }, { text: "Kalsium" }, { text: "Fosfor" }],
+                answer: 3
+            },
+            {
+                question: "Bahan makanan yang dapat menjadi sumber vitamin C adalah ….",
+                image: null,
+                options: [{ text: "Jeruk dan tomat" }, { text: "Susu dan kuning telur" }, { text: "Daging dan telur" }, { text: "Bayam dan wortel" }],
+                answer: 0
+            },
+            {
+                question: "Proses pencernaan mekanik di mulut dibantu oleh organ utama yaitu ….",
+                image: null,
+                options: [{ text: "Lidah" }, { text: "Gigi" }, { text: "Kelenjar ludah" }, { text: "Kerongkongan" }],
+                answer: 1
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let studentName = "";
+        let studentClass = "";
+        let selectedOptionIndex = null;
+
+        // DOM Elements
+        const startScreen = document.getElementById('start-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultScreen = document.getElementById('result-screen');
+        const identityForm = document.getElementById('identity-form');
+        const questionText = document.getElementById('question-text');
+        const questionImgContainer = document.getElementById('question-image-container');
+        const optionsContainer = document.getElementById('options-container');
+        const btnNext = document.getElementById('btn-next');
+        const progressBar = document.getElementById('progress-bar');
+        const questionNumber = document.getElementById('question-number');
+        const scoreLive = document.getElementById('score-live');
+
+        // Submit Form Identitas
+        identityForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            studentName = document.getElementById('student-name').value;
+            studentClass = document.getElementById('student-class').value;
+
+            startScreen.classList.remove('active');
+            quizScreen.classList.add('active');
+            loadQuestion();
+        });
+
+        // Muat Soal
+        function loadQuestion() {
+            selectedOptionIndex = null;
+            btnNext.disabled = true;
+
+            const data = quizData[currentQuestion];
+            questionText.innerText = `${currentQuestion + 1}. ${data.question}`;
+            
+            // Progress Bar & Info
+            progressBar.style.width = `${((currentQuestion + 1) / quizData.length) * 100}%`;
+            questionNumber.innerText = `Soal ${currentQuestion + 1} / ${quizData.length}`;
+            scoreLive.innerText = `Skor: ${Math.round(score)}`;
+
+            // Render Gambar Soal Utama (Jika URL tidak null)
+            questionImgContainer.innerHTML = "";
+            if (data.image) {
+                const img = document.createElement('img');
+                img.src = data.image;
+                img.alt = "Gambar Soal";
+                questionImgContainer.appendChild(img);
+            }
+
+            // Render Pilihan Jawaban
+            optionsContainer.innerHTML = "";
+            data.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.type = 'button';
+                
+                let content = `<span>${opt.text || ''}</span>`;
+                if (opt.image) {
+                    content += `<img src="${opt.image}" alt="Pilihan ${String.fromCharCode(65 + idx)}">`;
+                }
+                btn.innerHTML = content;
+
+                btn.onclick = () => selectOption(idx, btn);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function selectOption(index, btnElement) {
+            document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+            btnElement.classList.add('selected');
+            selectedOptionIndex = index;
+            btnNext.disabled = false;
+        }
+
+        btnNext.addEventListener('click', () => {
+            // Bobot skor per soal (100 / 40 = 2.5 poin per soal)
+            if (quizData[currentQuestion].answer === selectedOptionIndex) {
+                score += (100 / quizData.length);
+            }
+
+            currentQuestion++;
+            if (currentQuestion < quizData.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        });
+
+        // Halaman Akhir & Pengiriman ke Google Sheets
+        function showResults() {
+            quizScreen.classList.remove('active');
+            resultScreen.classList.add('active');
+
+            const finalScoreFormatted = Math.round(score);
+
+            document.getElementById('res-name').innerText = studentName;
+            document.getElementById('res-class').innerText = studentClass;
+            document.getElementById('final-score').innerText = finalScoreFormatted;
+
+            sendDataToGoogleSheet(studentName, studentClass, finalScoreFormatted);
+        }
+
+        function sendDataToGoogleSheet(name, className, scoreValue) {
+            const statusDiv = document.getElementById('status-saving');
+            
+            fetch(WEB_APP_URL, {
+                method: "POST",
+                mode: "no-cors",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    nama: name,
+                    kelas: className,
+                    skor: scoreValue,
+                    waktu: new Date().toLocaleString("id-ID")
+                })
+            }).then(() => {
+                statusDiv.innerHTML = "✅ Data nilai berhasil tersimpan ke sistem!";
+                statusDiv.style.color = "#00b894";
+            }).catch(error => {
+                statusDiv.innerHTML = "❌ Gagal menyimpan nilai otomatis.";
+                statusDiv.style.color = "#d63031";
+                console.error("Error:", error);
+            });
+        }
+    </script>
+</body>
+</html>
